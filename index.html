@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>X_Reward_Bot — Dashboard</title>
+  <script src="//libtl.com/sdk.js" data-zone="9808282" data-sdk="show_9808282"></script>
+  <style>
+    :root{
+      --bg:#0b0f13; --card:#111319; --muted:#9aa5b1; --accent:#ff8c1a; --primary:#e03e3e;
+      --glass: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:repeating-linear-gradient(45deg,#07090b 0 6px,#0b0f13 6px 12px);font-family:Inter, system-ui, Arial;color:#e6eef8}
+    .wrap{max-width:980px;margin:18px auto;padding:18px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 8px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .big{grid-column:span 2}
+    .h1{display:flex;justify-content:space-between;align-items:center}
+    .tag{color:var(--muted);font-size:13px}
+    .title{font-size:18px;margin:6px 0}
+    button.btn{border:0;padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:700}
+    .btn-primary{background:linear-gradient(180deg,#ffb37a,#ff8c1a);border:0;color:#081018}
+    .btn-accent{background:#e03e3e;color:white}
+    .muted-btn{background:#0f1724;color:var(--muted)}
+    .widget-row{display:flex;gap:10px;align-items:center}
+    .circle{width:56px;height:56px;border-radius:50%;background:#0d1114;display:flex;align-items:center;justify-content:center;font-weight:800}
+    .big-vertical{display:flex;flex-direction:column;gap:8px}
+    .log{background:#07101a;padding:12px;border-radius:12px;font-family:monospace;white-space:pre-wrap}
+    a.link{color:#7dd3fc}
+    /* responsive */
+    @media (max-width:900px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .big{grid-column:span 2}
+    }
+    @media (max-width:520px){
+      .grid{grid-template-columns:1fr}
+      .big{grid-column:span 1}
+    }
+    /* leaderboard list */
+    .list{display:flex;flex-direction:column;gap:8px}
+    .list-item{display:flex;justify-content:space-between;padding:8px;background:#0b1115;border-radius:10px}
+    .small{font-size:13px;color:var(--muted)}
+    .input{width:100%;padding:8px;border-radius:8px;border:1px solid #24303a;background:#07141a;color:#e6eef8}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card h1">
+      <div>
+        <div class="title">🎯 X_Reward_Bot — Dashboard</div>
+        <div class="tag">Mini App • Watch ads • Submit proofs • Admin tools</div>
+      </div>
+      <div style="text-align:right">
+        <div id="time" class="small"></div>
+        <div class="small"><a class="link" id="supportLink" href="#" target="_blank">Support</a></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <!-- Top left widgets -->
+      <div class="card">
+        <div class="small">💰 Coins</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div id="coins" style="font-size:28px;font-weight:800">—</div>
+            <div class="small" id="adsCount">Ads watched: —</div>
+          </div>
+          <div style="text-align:right">
+            <button id="openTasks" class="btn muted-btn">Tasks</button><br><br>
+            <button id="dailyClaim" class="btn btn-primary">Claim Daily</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Power Mode -->
+      <div class="card">
+        <div class="small">🚀 Power Mode</div>
+        <div id="powerState" style="margin-top:8px">
+          <div class="title">Not active</div>
+          <div class="small">Watch 3 Mystery Box ads to activate 2× rewards for 2 hours.</div>
+        </div>
+      </div>
+
+      <!-- Mystery Box -->
+      <div class="card">
+        <div class="small">🎁 Mystery Box</div>
+        <div style="margin-top:8px">
+          <div class="title">Watch an ad — get coins</div>
+          <div class="small">+100 coins per ad</div>
+          <div style="height:10px"></div>
+          <button id="watchAd" class="btn btn-accent">▶ Watch Ad</button>
+        </div>
+      </div>
+
+      <!-- Leaderboard (small preview) -->
+      <div class="card">
+        <div class="small">🏆 Leaderboards</div>
+        <div style="margin-top:8px" id="leaderPreview">
+          <div class="small">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Tasks / Proof -->
+      <div class="card big">
+        <div class="small">📋 Tasks</div>
+        <div id="tasksArea" style="margin-top:10px">
+          <div class="small">Loading tasks...</div>
+        </div>
+      </div>
+
+      <!-- Admin panel -->
+      <div class="card big" id="adminPanel" style="display:none">
+        <div class="small">🔧 Admin Panel</div>
+        <div style="margin-top:10px">
+          <input id="taskTitle" class="input" placeholder="Task title" />
+          <textarea id="taskDesc" class="input" placeholder="Description" style="height:70px;margin-top:6px"></textarea>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <input id="taskLink" class="input" placeholder="Optional link" />
+            <input id="taskReward" class="input" placeholder="Reward (coins)" style="max-width:120px"/>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <button id="btnAddTask" class="btn btn-primary">Add Task</button>
+            <button id="btnRefresh" class="btn muted-btn">Refresh</button>
+          </div>
+          <div style="margin-top:12px">
+            <div class="small">Pending submissions:</div>
+            <div id="pendingSub" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom area: leaderboards & pagination -->
+    <div style="margin-top:14px;display:grid;grid-template-columns:1fr 320px;gap:14px">
+      <div class="card">
+        <div class="small">🏆 Leaderboards (coins / invites / ads)</div>
+        <div style="margin-top:8px;display:flex;gap:10px">
+          <button id="lbCoins" class="btn muted-btn">Coins</button>
+          <button id="lbInv" class="btn muted-btn">Invites</button>
+          <button id="lbAds" class="btn muted-btn">Ads</button>
+        </div>
+        <div id="leaderboardList" style="margin-top:10px"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px">
+          <button id="prevPage" class="btn muted-btn">Prev</button>
+          <div id="pageInfo" class="small">Page 1</div>
+          <button id="nextPage" class="btn muted-btn">Next</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="small">👥 Referral & Support</div>
+        <div style="margin-top:10px">
+          <div class="small">Your referral will be shown in bot chat.</div>
+          <div style="height:10px"></div>
+          <div><a id="channelLink" class="link" target="_blank">Channel</a></div>
+          <div style="height:6px"></div>
+          <div><a id="supportLink2" class="link" target="_blank">Support group</a></div>
+        </div>
+        <div style="height:14px"></div>
+        <div class="small">Your balance (live)</div>
+        <div id="miniBalance" style="font-size:20px;font-weight:800">—</div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  const initData = tg?.initData || "";
+  if (tg) { tg.ready(); tg.expand(); }
+  const WEBAPP_URL = location.origin;
+
+  // elements
+  const coinsEl = document.getElementById('coins');
+  const adsCountEl = document.getElementById('adsCount');
+  const powerStateEl = document.getElementById('powerState');
+  const leaderPreview = document.getElementById('leaderPreview');
+  const tasksArea = document.getElementById('tasksArea');
+  const adminPanel = document.getElementById('adminPanel');
+  const pendingSub = document.getElementById('pendingSub');
+  const miniBalance = document.getElementById('miniBalance');
+  const channelLink = document.getElementById('channelLink');
+  const supportLink = document.getElementById('supportLink');
+  const supportLink2 = document.getElementById('supportLink2');
+
+  // config UI
+  channelLink.href = "{{channel}}".replace("{{channel}}", window.location.origin); // fallback, will be replaced client-side below
+  supportLink.href = supportLink2.href = "#"; // will be set in init
+
+  async function postJSON(path, body){
+    const res = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    if(!res.ok) throw new Error('Server error '+res.status);
+    return await res.json();
+  }
+
+  // utilities
+  function fmtTime(){
+    const d = new Date(); return d.toLocaleString();
+  }
+  document.getElementById('time').textContent = fmtTime();
+  setInterval(()=> document.getElementById('time').textContent = fmtTime(), 1000);
+
+  // Provide support & channel links from server env via a simple fetch to check_join (we call check_join to obtain channel)
+  async function loadJoinInfo(){
+    if(!initData) return;
+    try{
+      const j = await postJSON('/webapp/check_join', {init_data: initData});
+      channelLink.href = j.channel;
+      supportLink.href = supportLink2.href = j.channel ? j.channel.replace('Channel','channel') : '#';
+      supportLink.textContent = 'Support';
+      supportLink2.textContent = 'Support';
+      return j.member;
+    }catch(e){
+      console.error(e); return false;
+    }
+  }
+
+  // fetch profile / balance
+  async function loadMe(){
+    if(!initData) return;
+    try{
+      const res = await fetch('/webapp/me', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({init_data: initData})});
+      if(!res.ok) throw new Error('me failed');
+      const j = await res.json();
+      // if j contains ok false -> ignore
+      if(j.ok){
+        coinsEl.textContent = j.coins;
+        adsCountEl.textContent = 'Ads watched: ' + j.ads_watched;
+        miniBalance.textContent = j.coins + ' coins';
+        // Power mode
+        if(j.boost_until){
+          let until = new Date(j.boost_until);
+          if(until > new Date()){
+            powerStateEl.innerHTML = `<div class="title">Active until ${until.toLocaleString()}</div><div class="small">Boost on — 2× rewards</div>`;
+          } else {
+            powerStateEl.innerHTML = `<div class="title">Not active</div><div class="small">Watch 3 ads to enable Power Mode</div>`;
+          }
+        }
+      }
+    }catch(e){ console.error(e); }
+  }
+
+  // leaderboards preview (top 3 coins)
+  async function loadLeaderPreview(){
+    try{
+      const res = await fetch('/webapp/leaderboards?type=coins&page=1&per_page=3');
+      const j = await res.json();
+      if(j.ok && j.items){
+        leaderPreview.innerHTML = j.items.map((it,i)=> `<div class="small">${i+1}. @${it.username} — ${it.coins} coins</div>`).join('');
+      } else leaderPreview.innerHTML = '<div class="small">No data</div>';
+    }catch(e){ leaderPreview.innerHTML = '<div class="small">Error</div>'; }
+  }
+
+  // pagination state
+  let lbType='coins', lbPage=1, lbPer=6;
+  async function loadLeaderboard(){
+    try{
+      const res = await fetch(`/webapp/leaderboards?type=${lbType}&page=${lbPage}&per_page=${lbPer}`);
+      const j = await res.json();
+      if(!j.ok) return;
+      const list = document.getElementById('leaderboardList');
+      list.innerHTML = '';
+      j.items.forEach((it, idx) => {
+        const div = document.createElement('div'); div.className='list-item';
+        if(lbType==='coins') div.innerHTML = `<div>@${it.username}</div><div>${it.coins} coins</div>`;
+        else if(lbType==='invites') div.innerHTML = `<div>@${it.username}</div><div>${it.invites} invites</div>`;
+        else div.innerHTML = `<div>@${it.username}</div><div>${it.ads} ads • ${it.coins} coins</div>`;
+        list.appendChild(div);
+      });
+      document.getElementById('pageInfo').textContent = `Page ${j.page}`;
+    }catch(e){ console.error(e); }
+  }
+
+  document.getElementById('lbCoins').onclick = ()=>{ lbType='coins'; lbPage=1; loadLeaderboard(); };
+  document.getElementById('lbInv').onclick = ()=>{ lbType='invites'; lbPage=1; loadLeaderboard(); };
+  document.getElementById('lbAds').onclick = ()=>{ lbType='ads'; lbPage=1; loadLeaderboard(); };
+  document.getElementById('prevPage').onclick = ()=>{ if(lbPage>1){ lbPage--; loadLeaderboard(); } };
+  document.getElementById('nextPage').onclick = ()=>{ lbPage++; loadLeaderboard(); };
+
+  // tasks load with pagination
+  let taskPage=1, taskPer=6;
+  async function loadTasks(){
+    try{
+      const res = await fetch(`/webapp/get_tasks?page=${taskPage}&per_page=${taskPer}`);
+      const j = await res.json();
+      if(!j.ok) { tasksArea.innerHTML = 'No tasks'; return; }
+      tasksArea.innerHTML = '';
+      j.tasks.forEach(t=>{
+        const node = document.createElement('div'); node.style.border='1px solid #162026'; node.style.padding='10px'; node.style.marginBottom='8px'; node.style.borderRadius='12px';
+        node.innerHTML = `<div style="display:flex;justify-content:space-between"><div><b>${t.title}</b><div class="small">${t.description}</div></div><div style="text-align:right"><div class="small">${t.reward} coins</div><button class="btn btn-primary" style="margin-top:6px" onclick="openSubmit(${t.task_id})">Submit Proof</button></div></div>`;
+        tasksArea.appendChild(node);
+      });
+      // pagination simple
+      const pag = document.createElement('div'); pag.style.display='flex'; pag.style.justifyContent='space-between';
+      const prev = document.createElement('button'); prev.className='btn muted-btn'; prev.textContent='Prev'; prev.onclick = ()=>{ if(taskPage>1){ taskPage--; loadTasks(); } };
+      const next = document.createElement('button'); next.className='btn muted-btn'; next.textContent='Next'; next.onclick = ()=>{ taskPage++; loadTasks(); };
+      pag.appendChild(prev); pag.appendChild(next);
+      tasksArea.appendChild(pag);
+    }catch(e){ tasksArea.innerHTML = 'Failed to load tasks'; console.error(e); }
+  }
+
+  // submit proof: show file picker modal (simple)
+  window.openSubmit = function(task_id){
+    const container = document.createElement('div'); container.style.position='fixed'; container.style.left=0; container.style.top=0; container.style.right=0; container.style.bottom=0;
+    container.style.background='rgba(0,0,0,0.6)'; container.style.display='flex'; container.style.alignItems='center'; container.style.justifyContent='center';
+    container.innerHTML = `<div style="background:#0b1113;padding:16px;border-radius:12px;max-width:420px;width:100%"><div class="small">Submit proof for task ${task_id}</div><input type="file" id="pf" accept="image/*" style="margin-top:8px"/><div style="height:8px"></div><button id="doSubmit" class="btn btn-primary">Upload</button> <button id="doCancel" class="btn muted-btn">Cancel</button></div>`;
+    document.body.appendChild(container);
+    document.getElementById('doCancel').onclick = ()=> container.remove();
+    document.getElementById('doSubmit').onclick = async ()=>{
+      const f = document.getElementById('pf').files[0];
+      if(!f){ alert('Select image'); return; }
+      const fd = new FormData(); fd.append('init_data', initData); fd.append('task_id', task_id); fd.append('file', f);
+      try{
+        const res = await fetch('/webapp/submit_proof', {method:'POST', body: fd});
+        const j = await res.json();
+        if(j.ok){ alert('Submitted'); container.remove(); }
+        else alert('Error: '+(j.detail||'unknown'));
+      }catch(e){ alert('Upload failed'); console.error(e); }
+    };
+  };
+
+  // admin: load pending submissions
+  async function loadPending(){
+    try{
+      const res = await postJSON('/webapp/submissions', {init_data: initData});
+      if(res.ok){
+        pendingSub.innerHTML = '';
+        res.submissions.forEach(s=>{
+          const div = document.createElement('div'); div.style.border='1px solid #162026'; div.style.padding='8px'; div.style.marginTop='8px'; div.style.borderRadius='10px';
+          div.innerHTML = `<div style="display:flex;justify-content:space-between"><div><b>Submission ${s.submission_id}</b><div class="small">User: ${s.user_id} • Task: ${s.task_id}</div></div><div><a class="link" href="${s.file_path}" target="_blank">Open</a></div></div>`;
+          const approve = document.createElement('button'); approve.className='btn btn-primary'; approve.textContent='Approve';
+          const reject = document.createElement('button'); reject.className='btn muted-btn'; reject.textContent='Reject';
+          approve.onclick = async ()=>{ const r = await postJSON('/webapp/review_submission', {init_data: initData, submission_id: s.submission_id, action:'approve', reason:''}); if(r.ok){ alert('Awarded: '+r.awarded); div.remove(); } };
+          reject.onclick = async ()=>{ const r = await postJSON('/webapp/review_submission', {init_data: initData, submission_id: s.submission_id, action:'reject', reason:''}); if(r.ok){ alert('Rejected'); div.remove(); } };
+          div.appendChild(approve); div.appendChild(reject); pendingSub.appendChild(div);
+        });
+      }
+    }catch(e){ console.error(e); }
+  }
+
+  // watch ad handler
+  document.getElementById('watchAd').onclick = async ()=>{
+    if(!initData){ alert('Open inside Telegram'); return; }
+    try{
+      await show_9808282();
+      const res = await postJSON('/webapp/ad_watched', {init_data: initData});
+      if(res.ok){ alert(`+${res.coins_awarded} coins. Total: ${res.coins_total}`); loadMe(); loadLeaderPreview(); }
+      else if(res.error === 'join_channel'){ alert('Please join channel: '+res.channel); }
+      else alert('Server error');
+    }catch(e){ alert('Ad failed or dismissed'); console.error(e); }
+  };
+
+  // daily claim
+  document.getElementById('dailyClaim').onclick = async ()=>{
+    if(!initData){ alert('Open inside Telegram'); return; }
+    try{
+      const res = await postJSON('/webapp/daily_claim', {init_data: initData});
+      if(res.ok) { alert('Daily awarded: '+res.awarded); loadMe(); }
+      else if(res.error === 'already_claimed') alert('Already claimed today');
+      else alert('Error');
+    }catch(e){ alert('Error'); console.error(e); }
+  };
+
+  // admin add task
+  document.getElementById('btnAddTask').onclick = async ()=>{
+    const title = document.getElementById('taskTitle').value.trim();
+    const desc = document.getElementById('taskDesc').value.trim();
+    const link = document.getElementById('taskLink').value.trim();
+    const reward = Number(document.getElementById('taskReward').value||0);
+    if(!title || reward<=0){ alert('Title and positive reward required'); return; }
+    try{
+      const res = await postJSON('/webapp/add_task', {init_data: initData, title, description: desc, link, reward});
+      if(res.ok){ alert('Added'); loadTasks(); loadPending(); }
+    }catch(e){ alert('Error'); console.error(e); }
+  };
+  document.getElementById('btnRefresh').onclick = ()=> { loadTasks(); loadLeaderPreview(); loadMe(); loadPending(); };
+
+  // show admin panel if submissions endpoint allows (server checks admin)
+  (async function init(){
+    const joined = await loadJoinInfo();
+    // expose channel link in UI (if server returned)
+    try{
+      const j = await postJSON('/webapp/check_join', {init_data: initData});
+      document.getElementById('channelLink').href = j.channel;
+      document.getElementById('supportLink').href = j.channel.replace('Channel','channel');
+      document.getElementById('supportLink2').href = j.channel.replace('Channel','channel');
+    }catch(e){}
+    // show admin panel if authorized
+    try{
+      const subs = await postJSON('/webapp/submissions', {init_data: initData});
+      if(subs.ok) { adminPanel.style.display='block'; }
+    }catch(e){ adminPanel.style.display='none'; }
+    await loadLeaderPreview(); await loadTasks(); await loadMe(); await loadPending();
+  })();
+</script>
+</body>
+</html>
